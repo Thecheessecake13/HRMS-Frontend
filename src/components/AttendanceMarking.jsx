@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchEmployees, markAttendance, fetchAttendance } from '../utils/api';
+import { validateAttendance } from '../utils/validate';
 
 const AttendanceMarking = () => {
   const [employees, setEmployees] = useState([]);
@@ -8,7 +9,13 @@ const AttendanceMarking = () => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [status, setStatus] = useState('Present');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [attendanceError, setAttendanceError] = useState(null);
   const [toast, setToast] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Today's date string for max attribute (prevent future-date input via datepicker)
+  const todayStr = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     loadEmployees();
@@ -20,16 +27,18 @@ const AttendanceMarking = () => {
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 4000);
   };
 
   const loadEmployees = async () => {
     try {
+      setLoading(true);
+      setLoadError(null);
       const data = await fetchEmployees();
       setEmployees(data);
       if (data.length > 0) setSelectedEmp(data[0].employeeId);
     } catch (err) {
-      console.error(err);
+      setLoadError(err.message || 'Failed to load employees. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -37,21 +46,35 @@ const AttendanceMarking = () => {
 
   const loadAttendance = async (empId) => {
     try {
+      setAttendanceError(null);
       const data = await fetchAttendance(empId);
       setAttendance(data);
     } catch (err) {
-      console.error(err);
+      setAttendanceError(err.message || 'Failed to load attendance records. Please try again.');
+      setAttendance([]);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Client-side validation first
+    const { valid, errors } = validateAttendance({ employeeId: selectedEmp, date, status });
+    if (!valid) {
+      const firstError = Object.values(errors)[0];
+      showToast(firstError, 'error');
+      return;
+    }
+
+    setSubmitting(true);
     try {
       await markAttendance({ employeeId: selectedEmp, date, status });
-      loadAttendance(selectedEmp);
-      showToast('Attendance marked!');
+      await loadAttendance(selectedEmp);
+      showToast('Attendance marked successfully!');
     } catch (err) {
-      showToast(err.message, 'error');
+      showToast(err.message || 'Failed to mark attendance. Please try again.', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -64,6 +87,28 @@ const AttendanceMarking = () => {
       <div className="loading-container">
         <div className="spinner"></div>
         <p className="loading-text">Loading attendance data…</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div>
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Attendance</h1>
+            <p className="page-subtitle">Track daily employee attendance</p>
+          </div>
+        </div>
+        <div className="error-banner">
+          <span>⚠️</span> {loadError}
+          <button
+            onClick={loadEmployees}
+            style={{ marginLeft: '1rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', color: 'inherit' }}
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -118,7 +163,13 @@ const AttendanceMarking = () => {
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Date</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+              <input
+                type="date"
+                value={date}
+                max={todayStr}
+                onChange={(e) => setDate(e.target.value)}
+                required
+              />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Status</label>
@@ -127,8 +178,13 @@ const AttendanceMarking = () => {
                 <option value="Absent">✕ Absent</option>
               </select>
             </div>
-            <button type="submit" className="btn btn-primary" style={{ height: 'fit-content', alignSelf: 'end' }}>
-              Submit
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ height: 'fit-content', alignSelf: 'end' }}
+              disabled={submitting}
+            >
+              {submitting ? 'Saving…' : 'Submit'}
             </button>
           </form>
         </div>
@@ -153,7 +209,17 @@ const AttendanceMarking = () => {
         <div className="card-header">
           <h3>Attendance History</h3>
         </div>
-        {attendance.length === 0 ? (
+        {attendanceError ? (
+          <div className="error-banner" style={{ margin: '1rem' }}>
+            <span>⚠️</span> {attendanceError}
+            <button
+              onClick={() => loadAttendance(selectedEmp)}
+              style={{ marginLeft: '1rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', color: 'inherit' }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : attendance.length === 0 ? (
           <div className="empty-state">
             <span className="empty-icon">📅</span>
             <p className="empty-title">No records yet</p>

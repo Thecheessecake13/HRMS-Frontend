@@ -425,6 +425,42 @@ input::placeholder {
   color: var(--text-muted);
 }
 
+/* ─── Validation states ───────────────────────────────────────────────────── */
+input.input-error,
+select.input-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+input.input-error:focus,
+select.input-error:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+.field-error {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--danger);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.field-error::before {
+  content: '⚠';
+  font-size: 0.7rem;
+}
+
+/* ─── Disabled button ─────────────────────────────────────────────────────── */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

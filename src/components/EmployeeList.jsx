@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchEmployees, createEmployee, deleteEmployee } from '../utils/api';
+import { sanitize, validateEmployee, DEPARTMENTS } from '../utils/validate';
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -7,7 +8,8 @@ const EmployeeList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
-  const [formError, setFormError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [formData, setFormData] = useState({
     employeeId: '',
     name: '',
@@ -15,41 +17,73 @@ const EmployeeList = () => {
     department: 'Engineering'
   });
 
-  const departments = ['Engineering', 'Human Resources', 'Marketing', 'Sales', 'Design', 'Finance', 'Operations'];
-
   useEffect(() => {
     loadEmployees();
   }, []);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 4000);
   };
 
   const loadEmployees = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await fetchEmployees();
       setEmployees(data);
-      setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to load employees. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  // Update a single form field and clear its field error on change
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError(null);
+
+    // 1 — Client-side validation
+    const sanitized = {
+      employeeId: sanitize(formData.employeeId),
+      name: sanitize(formData.name),
+      email: sanitize(formData.email),
+      department: formData.department
+    };
+    const { valid, errors } = validateEmployee(sanitized);
+    if (!valid) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    // 2 — API call
+    setFieldErrors({});
+    setSubmitting(true);
     try {
-      await createEmployee(formData);
+      await createEmployee(sanitized);
       setShowModal(false);
       setFormData({ employeeId: '', name: '', email: '', department: 'Engineering' });
       showToast('Employee added successfully!');
       loadEmployees();
     } catch (err) {
-      setFormError(err.message);
+      // Server returned a field-specific message — show inline if possible
+      const msg = err.message || 'Failed to add employee. Please try again.';
+      if (msg.toLowerCase().includes('id')) {
+        setFieldErrors({ employeeId: msg });
+      } else if (msg.toLowerCase().includes('email')) {
+        setFieldErrors({ email: msg });
+      } else {
+        setFieldErrors({ _form: msg });
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -60,12 +94,12 @@ const EmployeeList = () => {
       showToast('Employee removed.');
       loadEmployees();
     } catch (err) {
-      showToast(err.message, 'error');
+      showToast(err.message || 'Failed to remove employee. Please try again.', 'error');
     }
   };
 
   const openModal = () => {
-    setFormError(null);
+    setFieldErrors({});
     setFormData({ employeeId: '', name: '', email: '', department: 'Engineering' });
     setShowModal(true);
   };
@@ -108,6 +142,12 @@ const EmployeeList = () => {
       {error && (
         <div className="error-banner">
           <span>⚠️</span> {error}
+          <button
+            onClick={loadEmployees}
+            style={{ marginLeft: '1rem', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', color: 'inherit' }}
+          >
+            Retry
+          </button>
         </div>
       )}
 
@@ -159,55 +199,74 @@ const EmployeeList = () => {
             <h2 className="modal-title">Add New Employee</h2>
             <p className="modal-subtitle">Fill in the details below to register a new employee.</p>
 
-            {formError && (
+            {fieldErrors._form && (
               <div className="error-banner" style={{ marginBottom: '1rem' }}>
-                <span>⚠️</span> {formError}
+                <span>⚠️</span> {fieldErrors._form}
               </div>
             )}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="form-group">
-                <label className="form-label">Employee ID <span className="form-hint">(must be unique)</span></label>
+                <label className="form-label">
+                  Employee ID <span className="form-hint">(letters, numbers, hyphens — max 20 chars)</span>
+                </label>
                 <input
                   type="text"
                   placeholder="e.g. EMP-001"
                   value={formData.employeeId}
-                  onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                  required
+                  onChange={(e) => handleChange('employeeId', e.target.value)}
+                  className={fieldErrors.employeeId ? 'input-error' : ''}
+                  maxLength={20}
+                  autoComplete="off"
                 />
+                {fieldErrors.employeeId && <p className="field-error">{fieldErrors.employeeId}</p>}
               </div>
+
               <div className="form-group">
                 <label className="form-label">Full Name</label>
                 <input
                   type="text"
                   placeholder="e.g. John Doe"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  className={fieldErrors.name ? 'input-error' : ''}
+                  maxLength={60}
+                  autoComplete="off"
                 />
+                {fieldErrors.name && <p className="field-error">{fieldErrors.name}</p>}
               </div>
+
               <div className="form-group">
                 <label className="form-label">Email Address</label>
                 <input
                   type="email"
                   placeholder="e.g. john@company.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  className={fieldErrors.email ? 'input-error' : ''}
+                  maxLength={100}
+                  autoComplete="off"
                 />
+                {fieldErrors.email && <p className="field-error">{fieldErrors.email}</p>}
               </div>
+
               <div className="form-group">
                 <label className="form-label">Department</label>
                 <select
                   value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  onChange={(e) => handleChange('department', e.target.value)}
+                  className={fieldErrors.department ? 'input-error' : ''}
                 >
-                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
+                {fieldErrors.department && <p className="field-error">{fieldErrors.department}</p>}
               </div>
+
               <div className="modal-actions">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Employee</button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Saving…' : 'Save Employee'}
+                </button>
               </div>
             </form>
           </div>

@@ -1,9 +1,25 @@
-const API_URL = 'https://assignment-backend-wine.vercel.app';
+const API_URL = 'https://hrms-backend-nu-drab.vercel.app/api';
 
+// ─── Shared response handler ──────────────────────────────────────────────────
+// Always extracts the `message` field from the JSON body on errors.
+const handleResponse = async (res) => {
+  if (res.ok) return res.json();
+  let message = `Request failed (${res.status})`;
+  try {
+    const body = await res.json();
+    message = body.message || message;
+  } catch {
+    // response body wasn't JSON — keep the default message
+  }
+  const err = new Error(message);
+  err.status = res.status;
+  throw err;
+};
+
+// ─── Employees ────────────────────────────────────────────────────────────────
 export const fetchEmployees = async () => {
   const res = await fetch(`${API_URL}/employees`);
-  if (!res.ok) throw new Error('Failed to fetch employees');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const createEmployee = async (data) => {
@@ -12,23 +28,18 @@ export const createEmployee = async (data) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || 'Failed to create employee');
-  }
-  return res.json();
+  return handleResponse(res);
 };
 
 export const deleteEmployee = async (id) => {
   const res = await fetch(`${API_URL}/employees/${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete employee');
-  return res.json();
+  return handleResponse(res);
 };
 
+// ─── Attendance ───────────────────────────────────────────────────────────────
 export const fetchAttendance = async (employeeId) => {
   const res = await fetch(`${API_URL}/attendance/${employeeId}`);
-  if (!res.ok) throw new Error('Failed to fetch attendance');
-  return res.json();
+  return handleResponse(res);
 };
 
 export const markAttendance = async (data) => {
@@ -37,9 +48,5 @@ export const markAttendance = async (data) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || 'Failed to mark attendance');
-  }
-  return res.json();
+  return handleResponse(res);
 };
