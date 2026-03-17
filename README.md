@@ -15,7 +15,7 @@ The frontend communicates with a RESTful backend API backed by a MongoDB databas
 
 ---
 
-## Tech Stack
+##  Tech Stack
 
 ### Frontend
 | Technology | Purpose |
@@ -37,7 +37,7 @@ The frontend communicates with a RESTful backend API backed by a MongoDB databas
 ### Database
 | Technology | Purpose |
 |---|---|
-| MongoDB | NoSQL database  |
+| MongoDB | NoSQL database (via MongoDB Atlas or local) |
 
 ### Deployment
 | Service | Purpose |
@@ -46,7 +46,7 @@ The frontend communicates with a RESTful backend API backed by a MongoDB databas
 
 ---
 
-## Steps to Run the Project Locally
+##  Steps to Run the Project Locally
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) v18+ installed
