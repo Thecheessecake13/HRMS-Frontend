@@ -1,4 +1,4 @@
-const API_URL = 'https://assignment-backend-wine.vercel.app';
+const API_URL = 'https://hrms-backend-nu-drab.vercel.app';
 
 export const fetchEmployees = async () => {
   const res = await fetch(`${API_URL}/employees`);
