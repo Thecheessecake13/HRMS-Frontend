@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-900: #06060a;
+  --color-dark-800: #0c0c14;
+  --color-dark-700: #12121e;
+  --color-dark-600: #1a1a2e;
+  --color-dark-500: #22223a;
+  --color-dark-400: #2a2a44;
+  --color-dark-300: #3a3a55;
+
+  --color-accent: #8b5cf6;
+  --color-accent-hover: #7c3aed;
+  --color-accent-light: rgba(139, 92, 246, 0.12);
+  --color-accent-glow: rgba(139, 92, 246, 0.25);
+
+  --color-txt-primary: #f1f1f7;
+  --color-txt-secondary: #a0a0b8;
+  --color-txt-muted: #6b6b80;
+
+  --color-glass-border: rgba(255, 255, 255, 0.06);
+  --color-glass-border-hover: rgba(255, 255, 255, 0.12);
+
+  --color-emerald: #10b981;
+  --color-emerald-bg: rgba(16, 185, 129, 0.12);
+  --color-emerald-text: #6ee7b7;
+
+  --color-rose: #f43f5e;
+  --color-rose-bg: rgba(244, 63, 94, 0.12);
+  --color-rose-text: #fda4af;
+
+  --color-amber: #f59e0b;
+  --color-amber-bg: rgba(245, 158, 11, 0.12);
+
+  --color-blue: #3b82f6;
+  --color-blue-bg: rgba(59, 130, 246, 0.12);
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--color-dark-900);
+    color: var(--color-txt-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-dark-400) transparent;
+  }
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: var(--color-dark-400); border-radius: 999px; }
+
+  input, select, textarea { color-scheme: dark; }
+}
+
+@layer utilities {
+  .glass-card {
+    background: var(--color-dark-700);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 16px;
+  }
+
+  .glass-card-hover {
+    transition: all 0.25s ease;
+  }
+  .glass-card-hover:hover {
+    border-color: var(--color-glass-border-hover);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+  }
+
+  .animate-fade-in { animation: fadeIn 0.2s ease; }
+  .animate-slide-up { animation: slideUp 0.25s ease; }
+  .animate-slide-in-left { animation: slideInLeft 0.3s ease; }
+  .animate-count-up { animation: countUp 0.6s ease-out; }
+  .animate-shimmer { animation: shimmer 1.5s infinite; }
+
+  .gradient-border {
+    position: relative;
+    background-clip: padding-box;
+  }
+  .gradient-border::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.4), rgba(59,130,246,0.2), transparent);
+    z-index: -1;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-dark-600) 25%, var(--color-dark-500) 50%, var(--color-dark-600) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(139,92,246,0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(139,92,246,0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(139,92,246,0); }
+}
