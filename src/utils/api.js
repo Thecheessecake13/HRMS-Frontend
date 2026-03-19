@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 // const API_URL = 'https://hrms-backend-nu-drab.vercel.app/api';
 const API_URL = 'http://localhost:5001/api';
-=======
-const API_URL = 'https://hrms-backend-nu-drab.vercel.app/api';
 
->>>>>>> cbc79d9cea61e95c98d228cc08d391b8e80f9b4d
 // ─── Shared response handler ──────────────────────────────────────────────────
 // Always extracts the `message` field from the JSON body on errors.
 const handleResponse = async (res) => {
@@ -36,7 +32,6 @@ export const createEmployee = async (data) => {
   return handleResponse(res);
 };
 
-<<<<<<< HEAD
 export const updateEmployee = async (id, data) => {
   const res = await fetch(`${API_URL}/employees/${id}`, {
     method: 'PUT',
@@ -46,8 +41,6 @@ export const updateEmployee = async (id, data) => {
   return handleResponse(res);
 };
 
-=======
->>>>>>> cbc79d9cea61e95c98d228cc08d391b8e80f9b4d
 export const deleteEmployee = async (id) => {
   const res = await fetch(`${API_URL}/employees/${id}`, { method: 'DELETE' });
   return handleResponse(res);
@@ -59,14 +52,11 @@ export const fetchAttendance = async (employeeId) => {
   return handleResponse(res);
 };
 
-<<<<<<< HEAD
 export const fetchAttendanceByDate = async (date) => {
   const res = await fetch(`${API_URL}/attendance/date/${date}`);
   return handleResponse(res);
 };
 
-=======
->>>>>>> cbc79d9cea61e95c98d228cc08d391b8e80f9b4d
 export const markAttendance = async (data) => {
   const res = await fetch(`${API_URL}/attendance`, {
     method: 'POST',
@@ -75,7 +65,6 @@ export const markAttendance = async (data) => {
   });
   return handleResponse(res);
 };
-<<<<<<< HEAD
 
 // ─── Activity Log ─────────────────────────────────────────────────────────────
 export const fetchActivityLogs = async (limit = 50, unreadOnly = false) => {
@@ -94,5 +83,3 @@ export const markLogsRead = async () => {
   const res = await fetch(`${API_URL}/activity/mark-read`, { method: 'PATCH' });
   return handleResponse(res);
 };
-=======
->>>>>>> cbc79d9cea61e95c98d228cc08d391b8e80f9b4d

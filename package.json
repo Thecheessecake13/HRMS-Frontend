@@ -9,24 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@tailwindcss/vite": "^4.2.2",
-=======
->>>>>>> cbc79d9cea61e95c98d228cc08d391b8e80f9b4d
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.0",
-<<<<<<< HEAD
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "vite": "^5.2.11"
   }
 }
-=======
-    "vite": "^5.2.11"
-  }
-}
->>>>>>> cbc79d9cea61e95c98d228cc08d391b8e80f9b4d
